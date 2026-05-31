@@ -1,3 +1,7 @@
+## 1.1.3
+
+- Fixed insecure local file protocol link to LICENSE in README.md to comply with pub.dev publishing rules.
+
 ## 1.1.2
 
 - Added official pub.dev search topics (date, datetime, parser, format, utility) in pubspec.yaml to enhance package discoverability.

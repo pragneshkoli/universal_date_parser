@@ -234,4 +234,4 @@ dart run example/universal_date_parser_example.dart
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](file:///d:/StudioProjects/universal_date_parser/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
