@@ -1,3 +1,7 @@
+## 1.1.2
+
+- Added official pub.dev search topics (date, datetime, parser, format, utility) in pubspec.yaml to enhance package discoverability.
+
 ## 1.1.1
 
 - Replaced Mermaid diagram in README.md with a clean Unicode text flowchart to ensure it renders correctly on pub.dev.
