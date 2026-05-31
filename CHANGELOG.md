@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Replaced Mermaid diagram in README.md with a clean Unicode text flowchart to ensure it renders correctly on pub.dev.
+
 ## 1.1.0
 
 - Added support for European dot-separated dates (`dd.MM.yyyy`, `yyyy.MM.dd`, `MM.dd.yyyy`, and 2-digit year variants).

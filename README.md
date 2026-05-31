@@ -141,25 +141,37 @@ UniversalDateParser.format(input, outputDateFormat: 'dd MMM yyyy HH:mm:ss');
 
 ---
 
-## 🔍 How It Works & Performance Optimizations
+The parser utilizes an intelligent routing engine to process dates through optimized fast-paths and fallback layers:
 
-```mermaid
-graph TD
-    A[Input String] --> B{Preprocess: Digits Only?}
-    B -- Yes: Length 8, 12, 14 -- > C[Insert separators: yyyy-MM-dd HH:mm:ss]
-    B -- No -- > D[Try ISO 8601 parsing]
-    C --> D
-    D -- Succeeded --> E[Return Formatted Output]
-    D -- Failed --> F{Is RFC Start?}
-    F -- Yes -- > G[Normalize Case O1 Map & Timezone Colon]
-    F -- No -- > H[Run Auto-Detection: Group Candidates]
-    G --> H
-    H --> I[Try Candidates strictly/non-strictly]
-    I -- Succeeded --> E
-    I -- Failed --> J[Try all formats as fallback]
-    J -- Succeeded --> E
-    J -- Failed --> K[Return 'Invalid date']
 ```
+ [Input String] ────────► [Preprocess: Digits Only?] ──► Yes (8/12/14 chars) ──► [Insert separators: yyyy-MM-dd HH:mm:ss]
+                               │                                                                  │
+                               ▼ No ◄─────────────────────────────────────────────────────────────┘
+                      [Try ISO 8601 parsing] ──► Succeeded ──► [Return Formatted Output]
+                               │
+                               ▼ Failed
+                        [Is RFC Start?] ──► Yes ──► [Normalize Case & TZ Colon] ──► [Run Auto-Detection]
+                               │                                                            ▲
+                               └─────────── No ─────────────────────────────────────────────┘
+                                                                                            │
+                                                                                            ▼
+                                                                                 [Try Category Candidates]
+                                                                                            │
+                                                                                  ┌─────────┴─────────┐
+                                                                                  ▼                   ▼
+                                                                              Succeeded             Failed
+                                                                                  │                   │
+                                                                                  ▼                   ▼
+                                                                           [Return Output]     [Try Fallbacks]
+                                                                                                      │
+                                                                                            ┌─────────┴─────────┐
+                                                                                            ▼                   ▼
+                                                                                        Succeeded             Failed
+                                                                                            │                   │
+                                                                                            ▼                   ▼
+                                                                                     [Return Output]    [Return "Invalid date"]
+```
+
 
 ### Engineered for Maximum Performance:
 1. **Direct Delimiter Insertion**: Purely numeric strings (length 8, 12, 14) are pre-segmented with standard dash delimiters, allowing them to instantly bypass complex pattern parsing and resolve directly via `DateTime.tryParse()`.
