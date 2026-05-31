@@ -288,12 +288,9 @@ class UniversalDateParser {
     return _allFormats;
   }
 
-  /// Core parser
-  String _tryParseAndFormatDate(String input, String outputFormat) {
-    // Avoid creating a new DateFormat instance on every call for the default format
-    final outFmt = (outputFormat == 'dd/MM/yyyy HH:mm')
-        ? _defaultOutputFormat
-        : DateFormat(outputFormat);
+  /// Core parser that returns the DateTime object
+  DateTime? _parseToDateTime(String input) {
+    if (input.isEmpty) return null;
 
     // Pre-process compact/numeric strings by adding standard delimiters
     if (_digitsOnlyRegex.hasMatch(input)) {
@@ -311,7 +308,7 @@ class UniversalDateParser {
 
     // ISO first
     final iso = DateTime.tryParse(input);
-    if (iso != null) return outFmt.format(iso);
+    if (iso != null) return iso;
 
     // Check if this is an RFC format
     final isRfc = _rfcStartRegex.hasMatch(input);
@@ -325,9 +322,6 @@ class UniversalDateParser {
     final isDigitsOnly = _digitsOnlyRegex.hasMatch(input);
     final candidates = _detectFormats(input, isRfc: isRfc);
 
-    // For RFC and Digits-Only formats, use parse() instead of parseStrict() because:
-    // 1. Timezone patterns (Z, z) don't work with parseStrict()
-    // 2. Adjacent numeric fields (e.g. yyyyMMddHHmm) don't parse strictly in intl package
     for (final fmt in candidates) {
       try {
         var parsed = (isRfc || isDigitsOnly)
@@ -348,7 +342,7 @@ class UniversalDateParser {
             parsed.microsecond,
           );
         }
-        return outFmt.format(parsed);
+        return parsed;
       } catch (_) {}
     }
 
@@ -373,14 +367,44 @@ class UniversalDateParser {
             parsed.microsecond,
           );
         }
-        return outFmt.format(parsed);
+        return parsed;
       } catch (_) {}
+    }
+
+    return null;
+  }
+
+  /// Core parser
+  String _tryParseAndFormatDate(String input, String outputFormat) {
+    // Avoid creating a new DateFormat instance on every call for the default format
+    final outFmt = (outputFormat == 'dd/MM/yyyy HH:mm')
+        ? _defaultOutputFormat
+        : DateFormat(outputFormat);
+
+    final parsed = _parseToDateTime(input);
+    if (parsed != null) {
+      return outFmt.format(parsed);
     }
 
     return 'Invalid date';
   }
 
-  /// Public API
+  /// Parses the input [date] string automatically and formats it into the desired [outputDateFormat].
+  ///
+  /// The parser auto-detects slash, dash, dot, compact, text, RFC, and ISO formats, then
+  /// reformats it to the target format.
+  ///
+  /// Returns `'Invalid date'` if the parsing fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final parser = UniversalDateParser();
+  /// String formatted = parser.formatDate(
+  ///   date: '2025-11-21T14:20:00Z',
+  ///   outputDateFormat: 'dd/MM/yyyy HH:mm',
+  /// );
+  /// print(formatted); // '21/11/2025 14:20'
+  /// ```
   String formatDate({
     required String date,
     String outputDateFormat = 'dd/MM/yyyy HH:mm',
@@ -388,7 +412,57 @@ class UniversalDateParser {
     return _tryParseAndFormatDate(date, outputDateFormat);
   }
 
-  /// Helper static method to parse and format dates without instantiating the class
+  /// Parses the input date string and returns a native [DateTime] object.
+  ///
+  /// Auto-detects 50+ format variations (ISO, slash, dash, dot, compact, named text, and RFC).
+  /// Returns `null` if the parsing fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// DateTime? parsed = UniversalDateParser.tryParse('21/11/2025 14:20');
+  /// if (parsed != null) {
+  ///   print(parsed.year); // 2025
+  /// }
+  /// ```
+  static DateTime? tryParse(String date) {
+    return _instance._parseToDateTime(date);
+  }
+
+  /// Parses the input date string and returns a native [DateTime] object.
+  ///
+  /// Auto-detects 50+ format variations.
+  /// Throws a standard [FormatException] if the parsing fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// try {
+  ///   DateTime parsed = UniversalDateParser.parse('2025.11.21');
+  ///   print(parsed.day); // 21
+  /// } on FormatException catch (e) {
+  ///   print('Failed: $e');
+  /// }
+  /// ```
+  static DateTime parse(String date) {
+    final parsed = _instance._parseToDateTime(date);
+    if (parsed == null) {
+      throw FormatException('Could not parse the date: $date');
+    }
+    return parsed;
+  }
+
+  /// Parses the input [date] string automatically and formats it into the desired [outputDateFormat]
+  /// without requiring class instantiation.
+  ///
+  /// Returns `'Invalid date'` if the parsing fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// String formatted = UniversalDateParser.format(
+  ///   'Mon, 21 Nov 2025 14:20:00 +0530',
+  ///   outputDateFormat: 'yyyy-MM-dd',
+  /// );
+  /// print(formatted); // '2025-11-21'
+  /// ```
   static String format(
     String date, {
     String outputDateFormat = 'dd/MM/yyyy HH:mm',

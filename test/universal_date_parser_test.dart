@@ -457,5 +457,88 @@ void main() {
         '2025-11-21',
       );
     });
+
+    group('DateTime Parsing API Tests (Static class methods)', () {
+      test('UniversalDateParser.tryParse happy path', () {
+        final parsed = UniversalDateParser.tryParse('21/11/2025 14:20');
+        expect(parsed, isNotNull);
+        expect(parsed!.year, 2025);
+        expect(parsed.month, 11);
+        expect(parsed.day, 21);
+        expect(parsed.hour, 14);
+        expect(parsed.minute, 20);
+      });
+
+      test('UniversalDateParser.tryParse failure returns null', () {
+        expect(UniversalDateParser.tryParse('garbage date'), isNull);
+        expect(UniversalDateParser.tryParse(''), isNull);
+      });
+
+      test('UniversalDateParser.parse happy path', () {
+        final parsed = UniversalDateParser.parse('2025-11-21T14:20:00Z');
+        expect(parsed.year, 2025);
+        expect(parsed.month, 11);
+        expect(parsed.day, 21);
+      });
+
+      test('UniversalDateParser.parse failure throws FormatException', () {
+        expect(
+          () => UniversalDateParser.parse('garbage'),
+          throwsFormatException,
+        );
+      });
+    });
+
+    group('Top-Level & Extension API Tests (Zero Instantiation)', () {
+      test('Top-level tryParseDate', () {
+        final parsed = tryParseDate('21/11/2025');
+        expect(parsed, isNotNull);
+        expect(parsed!.year, 2025);
+        expect(parsed.month, 11);
+        expect(parsed.day, 21);
+      });
+
+      test('Top-level parseDate', () {
+        final parsed = parseDate('2025-11-21 14:20');
+        expect(parsed.year, 2025);
+        expect(parsed.month, 11);
+        expect(parsed.day, 21);
+        expect(parsed.hour, 14);
+        expect(parsed.minute, 20);
+      });
+
+      test('Top-level formatDate', () {
+        expect(formatDate('21.11.2025'), '21/11/2025 00:00');
+        expect(formatDate('garbage'), 'Invalid date');
+      });
+
+      test('String extension formatDate', () {
+        expect('2025-11-21 14:20:30'.formatDate(), '21/11/2025 14:20');
+        expect(
+          '2025-11-21'.formatDate(outputDateFormat: 'yyyy-MM-dd'),
+          '2025-11-21',
+        );
+        expect('invalid'.formatDate(), 'Invalid date');
+      });
+
+      test('String extension tryParseDate', () {
+        final parsed = '21 Nov 2025'.tryParseDate();
+        expect(parsed, isNotNull);
+        expect(parsed!.year, 2025);
+        expect(parsed.month, 11);
+        expect(parsed.day, 21);
+        expect('garbage'.tryParseDate(), isNull);
+      });
+
+      test('String extension parseDate', () {
+        final parsed = '202511211420'.parseDate();
+        expect(parsed.year, 2025);
+        expect(parsed.month, 11);
+        expect(parsed.day, 21);
+        expect(parsed.hour, 14);
+        expect(parsed.minute, 20);
+        expect(() => 'garbage'.parseDate(), throwsFormatException);
+      });
+    });
   });
 }

@@ -1,6 +1,6 @@
 name: universal_date_parser
 description: A highly optimized, auto-detecting date parser for Dart/Flutter. Supports ISO, slash, dash, dot, text, US, RFC, and compact formats.
-version: 1.1.3
+version: 1.1.4
 repository: https://github.com/pragneshkoli/universal_date_parser
 issue_tracker: https://github.com/pragneshkoli/universal_date_parser/issues
 

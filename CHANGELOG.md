@@ -1,3 +1,11 @@
+## 1.1.4
+
+- Added stateless static APIs (`UniversalDateParser.tryParse`, `UniversalDateParser.parse`, and `UniversalDateParser.format`).
+- Added widget-friendly `String` extensions (`formatDate()`, `tryParseDate()`, and `parseDate()`) for zero-instantiation direct calls.
+- Added top-level global functions (`formatDate()`, `tryParseDate()`, and `parseDate()`).
+- Documented all public APIs with rich Dartdoc comments containing markdown code block examples for interactive IDE hover assistance.
+- Bumped Dart SDK compatibility range and updated the Features section in the README.
+
 ## 1.1.3
 
 - Fixed insecure local file protocol link to LICENSE in README.md to comply with pub.dev publishing rules.

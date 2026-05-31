@@ -10,12 +10,14 @@ A highly optimized, auto-detecting, bulletproof date parsing package for Dart an
 ## ✨ Features
 
 - 🔍 **Auto-Detect Format Routing**: Instant pattern matching handles date formats automatically.
-- ⚡ **Static Utility Interface**: Call `UniversalDateParser.format()` directly to skip class instantiation.
+- ⚡ **Zero-Instantiation Access**: Call static methods or top-level helpers directly without creating objects.
+- 🔗 **String Extensions**: Perform fluid parsing and formatting directly on any `String` literal in your Flutter widgets.
+- 📖 **Rich IDE Hover Documentation**: Every public method is fully documented with complete Dartdoc comments and interactive markdown code blocks for instant hover assistance in VS Code, Android Studio, and IntelliJ.
 - 🚀 **High-Performance Architecture**: Built for zero-overhead hot paths (precompiled regular expressions, pre-grouped list allocations, cached common output formatters, and O(1) case capitalization map lookups).
 - 📅 **50+ Date Format Variations**: Full support for ISO-8601, RFC-2822, European Dot-separated dates, US (Month/Day/Year) layouts, 2-digit years, and compact strings.
 - 🌍 **Case-Insensitive RFC/HTTP Header Parsing**: Easily handles HTTP/RFC date formats in any case casing (`Mon`, `mon`, `MON`).
 - 🛡️ **Logical Calendrical Validation**: Rejects invalid dates automatically (e.g., April 31st, February 30th, month 13, non-leap year Feb 29ths).
-- ✅ **Exhaustive Testing Suite**: 75+ passing unit tests covering edge cases, leap years, timezone offsets, and bounds.
+- ✅ **Exhaustive Testing Suite**: 85+ passing unit tests covering edge cases, leap years, timezone offsets, and bounds.
 
 ---
 
@@ -28,7 +30,7 @@ environment:
   sdk: ^3.12.0 # Supports Dart 3.12.0+ & Flutter 3.44.0+
 
 dependencies:
-  universal_date_parser: ^1.1.0
+  universal_date_parser: ^1.1.4
 ```
 
 Then download the package:
@@ -41,35 +43,43 @@ dart pub get
 
 ## 🚀 Quick Start
 
-### Instance-level Usage
+### 1. Fluid String Extensions (Highly Recommended for Widgets)
 ```dart
 import 'package:universal_date_parser/universal_date_parser.dart';
 
 void main() {
-  final parser = UniversalDateParser();
-  
-  // Parse various formats automatically
-  print(parser.formatDate(date: '2025-11-21T14:20:00.000Z')); 
+  // Format string directly
+  print('2025-11-21 14:20:30'.formatDate()); 
   // Output: 21/11/2025 14:20
-  
-  print(parser.formatDate(date: 'Mon, 21 Nov 2025 14:20:00 +05:30')); 
-  // Output: 21/11/2025 14:20
-  
-  print(parser.formatDate(date: '21.11.25 14:20')); 
-  // Output: 21/11/2025 14:20
+
+  // Parse directly to native DateTime?
+  DateTime? parsed = '21.11.25'.tryParseDate();
+  print(parsed?.year); // Output: 2025
 }
 ```
 
-### Static Utility Usage (Stateless)
-You do not need to instantiate the class if you are writing quick parsing logic:
+### 2. Static Class API (Stateless)
 ```dart
 import 'package:universal_date_parser/universal_date_parser.dart';
 
 void main() {
-  // Uses the highly optimized static singleton parser
-  final formatted = UniversalDateParser.format('11/21/25', outputDateFormat: 'yyyy-MM-dd');
-  print(formatted); 
-  // Output: 2025-11-21
+  // Direct formatting
+  String formatted = UniversalDateParser.format('11/21/25', outputDateFormat: 'yyyy-MM-dd');
+  print(formatted); // Output: 2025-11-21
+
+  // Direct native DateTime parsing
+  DateTime dt = UniversalDateParser.parse('202511211420');
+  print(dt.hour); // Output: 14
+}
+```
+
+### 3. Global Top-Level Helpers
+```dart
+import 'package:universal_date_parser/universal_date_parser.dart';
+
+void main() {
+  print(formatDate('Mon, 21 Nov 2025 14:20:00 +0530')); // 21/11/2025 14:20
+  DateTime? dt = tryParseDate('21.11.2025');
 }
 ```
 
@@ -141,37 +151,64 @@ UniversalDateParser.format(input, outputDateFormat: 'dd MMM yyyy HH:mm:ss');
 
 ---
 
-The parser utilizes an intelligent routing engine to process dates through optimized fast-paths and fallback layers:
+## ⚡ API Reference & Zero-Instantiation Access
 
-```
- [Input String] ────────► [Preprocess: Digits Only?] ──► Yes (8/12/14 chars) ──► [Insert separators: yyyy-MM-dd HH:mm:ss]
-                               │                                                                  │
-                               ▼ No ◄─────────────────────────────────────────────────────────────┘
-                      [Try ISO 8601 parsing] ──► Succeeded ──► [Return Formatted Output]
-                               │
-                               ▼ Failed
-                        [Is RFC Start?] ──► Yes ──► [Normalize Case & TZ Colon] ──► [Run Auto-Detection]
-                               │                                                            ▲
-                               └─────────── No ─────────────────────────────────────────────┘
-                                                                                            │
-                                                                                            ▼
-                                                                                 [Try Category Candidates]
-                                                                                            │
-                                                                                  ┌─────────┴─────────┐
-                                                                                  ▼                   ▼
-                                                                              Succeeded             Failed
-                                                                                  │                   │
-                                                                                  ▼                   ▼
-                                                                           [Return Output]     [Try Fallbacks]
-                                                                                                      │
-                                                                                            ┌─────────┴─────────┐
-                                                                                            ▼                   ▼
-                                                                                        Succeeded             Failed
-                                                                                            │                   │
-                                                                                            ▼                   ▼
-                                                                                     [Return Output]    [Return "Invalid date"]
+`UniversalDateParser` offers multiple, highly flexible ways to use the library depending on your architecture:
+
+### 1. Static Class API (Zero-Instantiation)
+Parse dates statically anywhere in your code without instantiating objects.
+
+* **`UniversalDateParser.tryParse(String date)`**
+  Parses any supported format and returns a native [DateTime] object. Returns `null` if parsing fails.
+  ```dart
+  DateTime? parsed = UniversalDateParser.tryParse('21/11/2025 14:20');
+  ```
+* **`UniversalDateParser.parse(String date)`**
+  Parses and returns a native [DateTime] object. Throws a [FormatException] if parsing fails.
+  ```dart
+  DateTime parsed = UniversalDateParser.parse('2025.11.21');
+  ```
+* **`UniversalDateParser.format(String date, {String outputDateFormat})`**
+  Formats the date string automatically. Returns `'Invalid date'` if parsing fails.
+  ```dart
+  String display = UniversalDateParser.format('20251121');
+  ```
+
+### 2. Elegant String Extensions (Widget-Friendly)
+Direct, fluid extension methods on standard `String` literals. Extremely convenient for direct use in Flutter widgets.
+
+* **`String.formatDate({String outputDateFormat})`**
+  Formats this string automatically.
+  ```dart
+  Text('2025-11-21'.formatDate()) // Output widget: 21/11/2025 00:00
+  ```
+* **`String.tryParseDate()`**
+  Parses this string into a native [DateTime?].
+  ```dart
+  DateTime? dt = 'Mon, 21 Nov 2025 14:20:00'.tryParseDate();
+  ```
+* **`String.parseDate()`**
+  Parses this string into a native [DateTime]. Throws [FormatException] if invalid.
+  ```dart
+  DateTime dt = '202511211420'.parseDate();
+  ```
+
+### 3. Global Top-Level Helpers
+Standard global functions available after importing the package.
+
+* **`tryParseDate(String date)`** ──► Returns `DateTime?`
+* **`parseDate(String date)`** ────► Returns `DateTime`
+* **`formatDate(String date, {String outputDateFormat})`** ──► Returns `String`
+
+### 4. Instance-level API
+Ideal for object-oriented injections.
+
+```dart
+final parser = UniversalDateParser();
+String display = parser.formatDate(date: '21/11/2025');
 ```
 
+---
 
 ### Engineered for Maximum Performance:
 1. **Direct Delimiter Insertion**: Purely numeric strings (length 8, 12, 14) are pre-segmented with standard dash delimiters, allowing them to instantly bypass complex pattern parsing and resolve directly via `DateTime.tryParse()`.
@@ -217,7 +254,7 @@ dart test
 
 *Output:*
 ```bash
-00:00 +75: All tests passed!
+00:00 +85: All tests passed!
 ```
 
 ---

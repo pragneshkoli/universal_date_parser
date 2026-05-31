@@ -4,7 +4,7 @@ void main() {
   final parser = UniversalDateParser();
 
   print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  print('  Universal Date Parser - Robust Senior-QA Demo');
+  print('  Universal Date Parser - Robust Developer Demo');
   print('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   // 1. ISO Formats
@@ -110,21 +110,39 @@ void main() {
   );
   print('');
 
-  // 9. Static Helper Method Demo
-  print('⚡ 9. Static Helper Method (Zero instantiation required)');
+  // 9. String Extension Methods
+  print('⚡ 9. String Extension Methods (Zero-Instantiation Direct Calls)');
   print('─────────────────────────────────────────────────────');
-  final staticOutput = UniversalDateParser.format(
-    '11/21/25',
-    outputDateFormat: 'yyyy-MM-dd',
-  );
-  print(
-    '  Code:  UniversalDateParser.format(\'11/21/25\', outputDateFormat: \'yyyy-MM-dd\')',
-  );
-  print('  Yield: $staticOutput');
+  print("  '21.11.25'.formatDate() ──► ${'21.11.25'.formatDate()}");
+  print("  '11/21/2025'.tryParseDate() ──► ${'11/21/2025'.tryParseDate()}");
+  print("  '202511211420'.parseDate() ──► ${'202511211420'.parseDate()}");
   print('');
 
-  // 10. Robust Calendrical Validation & Logical Errors Demo
-  print('🛡️ 10. Robust Logical Error Handling & Negative Testing');
+  // 10. Top-Level Global Functions
+  print('⚡ 10. Top-Level Global Functions (Global Utility Helpers)');
+  print('─────────────────────────────────────────────────────');
+  print("  formatDate('21-11-2025') ──► ${formatDate('21-11-2025')}");
+  print(
+    "  tryParseDate('Nov 21, 2025 14:20') ──► ${tryParseDate('Nov 21, 2025 14:20')}",
+  );
+  print(
+    "  parseDate('2025-11-21T14:20:00Z') ──► ${parseDate('2025-11-21T14:20:00Z')}",
+  );
+  print('');
+
+  // 11. Native DateTime Parsing
+  print('📅 11. Native DateTime API (Returns native Dart DateTime objects)');
+  print('─────────────────────────────────────────────────────');
+  final dtResult = UniversalDateParser.tryParse('21/11/2025 14:20');
+  print('  Input:  "21/11/2025 14:20"');
+  print('  Parsed: $dtResult (Type: ${dtResult.runtimeType})');
+  print(
+    '  Year:   ${dtResult?.year}, Month: ${dtResult?.month}, Day: ${dtResult?.day}',
+  );
+  print('');
+
+  // 12. Robust Calendrical Validation & Logical Errors Demo
+  print('🛡️ 12. Robust Logical Error Handling & Negative Testing');
   print('─────────────────────────────────────────────────────');
   _printExample(parser, '29/02/2024', 'Valid leap year (29 Feb 2024)');
   _printExample(parser, '29/02/2025', 'Invalid leap year (29 Feb 2025)');
